@@ -122,7 +122,7 @@ body {
 
 .day-row input[type="checkbox"]:checked{
     background-color: var(--primary-color);
-    
+    color: red;
 }
 
 .day-hours-input{
