@@ -100,7 +100,9 @@
             // 1. Get the values from the date inputs
             const start = startDateInput.valueAsDate;
             const end = endDateInput.valueAsDate;
-            
+
+
+
             // capture the default shift length to use for every day
             const defaultHours = shiftHoursInput.value; 
 
@@ -120,15 +122,23 @@
             // Create the first week wrapper
             let currentWeekDiv = document.createElement('div');
             currentWeekDiv.className = 'week-box'; 
-            currentWeekDiv.innerHTML = `<h4>Week ${weekCount}</h4>`;
+            currentWeekDiv.innerHTML = `
+            
+           <div id="WeekText">
+                <h4>Week ${weekCount}</h4>
+                <h4>Hours</h4>
+            </div>
+            `;
             
             weeksContainer.appendChild(currentWeekDiv);
 
+            let OperationCounter = 0;
+
             while (currentDate <= end) {
-                
+
                 // Create a container for this specific day (for better layout control)
                 const dayContainer = document.createElement('div');
-                dayContainer.className = 'day-row'; 
+                dayContainer.className = 'day-row';   
 
                 
                 // 1. The Checkbox
@@ -169,12 +179,17 @@
                     weeksContainer.appendChild(currentWeekDiv);
                 }
 
+
                 // Move to next day
                 currentDate = addDays(currentDate, 1);
             }
 
             // Show the schedule area
             scheduleArea.style.display = 'block';
+
+            weeksContainer.scrollIntoView({ behavior: 'smooth'});
+            console.log("Schedule generated. Scrolled into view");
+            
         });
 
         // --- STEP 4: CALCULATE EARNINGS (UPDATED) ---
@@ -206,8 +221,10 @@
                 const hoursForThisDay = parseFloat(hourInput.value);
                 
                 // Add to total (if it's a valid number)
-                if (!isNaN(hoursForThisDay)) {
+                if (!isNaN(hoursForThisDay) && hoursForThisDay > 0 && hoursForThisDay <= 24) {
                     totalHours += hoursForThisDay;
+                }else {
+                    alert("Please enter valid hours (0-24) for selected days.");
                 }
             });
 
@@ -219,30 +236,6 @@
 
             // 5. Update Display
             hoursDisplay.textContent = totalHours;
-            totalDisplay.textContent = totalMoney.toFixed(2) + " €";
-        });
-
-        // --- STEP 4: CALCULATE EARNINGS ---
-
-        calculateBtn.addEventListener('click', function() {
-            // 1. Find all checkboxes that are CHECKED
-            // querySelectorAll gives us a list of elements.
-            const checkedBoxes = document.querySelectorAll('.day-checkbox:checked');
-            
-            // 2. Count them
-            const daysWorked = checkedBoxes.length;
-
-            // 3. Get values for wage and hours
-            const wage = parseFloat(hourlyRateInput.value);
-            const hoursPerDay = parseFloat(shiftHoursInput.value);
-
-            // 4. Do the math
-            const totalHours = daysWorked * hoursPerDay;
-            const totalMoney = totalHours * wage;
-
-            // 5. Update the display
-            hoursDisplay.textContent = totalHours;
-            // .toFixed(2) forces 2 decimal places (e.g., 100.00 instead of 100)
             totalDisplay.textContent = totalMoney.toFixed(2) + " €";
         });
 
