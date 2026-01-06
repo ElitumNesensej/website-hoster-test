@@ -76,7 +76,7 @@
         const hoursDisplay = document.getElementById('hours-display');
 
         // --- STEP 2: HELPER FUNCTIONS ---
-        
+
         // This function adds days to a date. 
         // Example: addDays(Nov 24, 1) -> Nov 25
         function addDays(date, days) {
@@ -96,12 +96,29 @@
         
         // --- STEP 3: GENERATE THE SCHEDULE (UPDATED) ---
         
-        generateBtn.addEventListener('click', function() {
+        generateBtn.addEventListener('click', generateFunction);
+        
+        function generateFunction(isLoading = false) {
             // 1. Get the values from the date inputs
             const start = startDateInput.valueAsDate;
             const end = endDateInput.valueAsDate;
 
+            const currentRows = document.querySelectorAll('.day-row');
+            let rowBackpack = {};
 
+            currentRows.forEach(row => {
+            // 1. Get the ID
+            const id = row.getAttribute('data-date'); 
+
+            // 2. Save to backpack if ID exists
+            if (id) {
+                rowBackpack[id] = row;         
+                }
+            });
+
+            console.log("Row backpack created:", rowBackpack);
+
+            weeksContainer.innerHTML = ''; // Clear previous weeks
 
             // capture the default shift length to use for every day
             const defaultHours = shiftHoursInput.value; 
@@ -112,8 +129,8 @@
                 return;
             }
 
-            // 2. Clear any previous schedule
-            weeksContainer.innerHTML = '';
+            // 2. Clear previous schedule
+
             
             // 3. Loop through dates to create weeks
             let currentDate = new Date(start);
@@ -137,34 +154,44 @@
             while (currentDate <= end) {
 
                 // Create a container for this specific day (for better layout control)
-                const dayContainer = document.createElement('div');
-                dayContainer.className = 'day-row';   
+                const dateKey = currentDate.toISOString().slice(0,10);
+                let dayContainer;
 
-                
-                // 1. The Checkbox
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'day-checkbox';
-                
-                // 2. The Label (Date)
-                const label = document.createElement('label');
-                // Add a non-breaking space for spacing
-                label.innerHTML = "&nbsp;" + formatDate(currentDate);
-                label.style.flexGrow = "1"; // Push the input to the right if needed
-                
-                // Put checkbox inside label so clicking the text also checks the box
-                label.prepend(checkbox);
+                if(rowBackpack[dateKey]){
+                    dayContainer = rowBackpack[dateKey];
+                    console.log("Reusing row for date:", dateKey);    
+                } else {
 
-                // 3. The Specific Hour Input (NEW!)
-                const hourInput = document.createElement('input');
-                hourInput.type = 'number';
-                hourInput.className = 'day-hours-input'; // Class to find it later
-                hourInput.value = defaultHours; // Set the default value from the top setting
+                    // 1. The Checkbox
+                    dayContainer = document.createElement('div');
+                    dayContainer.className = 'day-row';
+                    dayContainer.setAttribute('data-date', dateKey);
 
-                
-                // Add elements to the day container
-                dayContainer.appendChild(label);
-                dayContainer.appendChild(hourInput);
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'day-checkbox';
+                    
+                    // 2. The Label (Date)
+                    const label = document.createElement('label');
+                    // Add a non-breaking space for spacing
+                    label.innerHTML = "&nbsp;" + formatDate(currentDate);
+                    label.style.flexGrow = "1"; // Push the input to the right if needed
+                    
+                    // Put checkbox inside label so clicking the text also checks the box
+                    label.prepend(checkbox);
+
+                    // 3. The Specific Hour Input (NEW!)
+                    const hourInput = document.createElement('input');
+                    hourInput.type = 'number';
+                    hourInput.className = 'day-hours-input'; // Class to find it later
+                    hourInput.value = defaultHours; // Set the default value from the top setting
+ 
+                    // Add elements to the day container
+                    dayContainer.appendChild(label);
+                    dayContainer.appendChild(hourInput);
+                }
+
+
                 
                 // Add the day container to the week
                 currentWeekDiv.appendChild(dayContainer);
@@ -189,12 +216,15 @@
 
             weeksContainer.scrollIntoView({ behavior: 'smooth'});
             console.log("Schedule generated. Scrolled into view");
-            
-        });
+           
+            saveData();
+        };
 
         // --- STEP 4: CALCULATE EARNINGS (UPDATED) ---
 
-        calculateBtn.addEventListener('click', function() {
+        calculateBtn.addEventListener('click', CalculateFunction); 
+        
+        function CalculateFunction() {
             // 1. Find all checkboxes that are CHECKED
             const checkedBoxes = document.querySelectorAll('.day-checkbox:checked');
             
@@ -202,16 +232,6 @@
 
             // 2. Loop through each checked box to find its specific hours
             checkedBoxes.forEach(function(box) {
-                // DOM TRAVERSAL:
-                // The structure is: 
-                // <div class="day-row"> 
-                //    <label><input checkbox/></label> 
-                //    <input class="day-hours-input"/> 
-                // </div>
-                
-                // The 'box' is the checkbox.
-                // Its parent is the <label>.
-                // The label's parent is the <div class="day-row">
                 
                 // We need to find the input inside the SAME "day-row" container.
                 const rowContainer = box.closest('.day-row');
@@ -226,6 +246,7 @@
                 }else {
                     alert("Please enter valid hours (0-24) for selected days.");
                 }
+                saveData();
             });
 
             // 3. Get wage
@@ -237,8 +258,76 @@
             // 5. Update Display
             hoursDisplay.textContent = totalHours;
             totalDisplay.textContent = totalMoney.toFixed(2) + " €";
-        });
+        };
 
+
+        function saveData() {
+            // Placeholder for future data saving functionality
+            const Settings = {
+                hourlyRateInput: hourlyRateInput.value,
+                shiftHoursInput: shiftHoursInput.value,
+                startDateInput: startDateInput.value,
+                endDateInput: endDateInput.value
+            };
+
+            const shifts = {};
+
+            // Select day row
+            const dayRows = document.querySelectorAll('.day-row');
+            dayRows.forEach(row => {
+                // We access all elements in the row
+                const checkbox = row.querySelector('.day-checkbox');
+                const hourInput = row.querySelector('.day-hours-input');
+                const dateLabel = row.querySelector('label').innerText.trim(); //trim is to remove extra spaces
+                
+                if (checkbox.checked || hourInput.value !== shiftHoursInput.value) {
+                    shifts[dateLabel] = {
+                        checked: checkbox.checked,
+                        hours: hourInput.value
+                    };
+                }
+            })
+
+
+            localStorage.setItem('marketSettings', JSON.stringify(Settings));
+            localStorage.setItem('marketShifts', JSON.stringify(shifts));
+
+            // Optional: Tell yourself it worked
+            console.log("Settings saved!");
+        }
+
+        function loadData() {
+            const savedSettings = localStorage.getItem('marketSettings');
+            const savedShifts = localStorage.getItem('marketShifts');
+            if (savedSettings) {
+                const Settings = JSON.parse(savedSettings);
+                hourlyRateInput.value = Settings.hourlyRateInput;
+                shiftHoursInput.value = Settings.shiftHoursInput;
+                startDateInput.value = Settings.startDateInput;
+                endDateInput.value = Settings.endDateInput;
+            }
+
+            if(savedShifts) {
+
+                const Shifts = JSON.parse(savedShifts);
+
+                generateFunction(); // Generate the schedule first
+                console.log("Loading saved shifts...");
+
+                elements = document.querySelectorAll('.day-row');
+                elements.forEach(row => {
+                    const dateLabel = row.querySelector('label').innerText.trim();
+                    if(Shifts[dateLabel]) {
+                        row.querySelector('.day-checkbox').checked = Shifts[dateLabel].checked;
+                        row.querySelector('.day-hours-input').value = Shifts[dateLabel].hours;
+
+                        calculateBtn.click(); // Recalculate totals after loading
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadData());
     </script>
 </body>
 </html>

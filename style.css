@@ -225,8 +225,8 @@ button{
 
 
 /* === DESKTOP VERSION === */
-/* Triggers only when screen is wider than 1024px (Laptops/Desktops) */
-@media (min-width: 1024px) {
+/* Triggers only when screen is wider than 600px (Tablets) */
+@media (min-width: 600px) {
     body {
         padding: 40px;
         padding-bottom: 150px;
@@ -238,6 +238,11 @@ button{
     }
 
     .settings-area {
+        max-width: 800px;
+        padding: 30px 100px;
+    }
+
+    #schedule-area {
         max-width: 800px;
         padding: 30px 100px;
     }
