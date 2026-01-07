@@ -23,7 +23,7 @@ body {
     align-items: center;
     width: 100%;
     padding: 24px;
-    padding-bottom: 120px;
+    padding-bottom: 105px;
     min-height: 100vh;
 }
 
@@ -227,7 +227,13 @@ button{
 }
 
 .clear-data-btn{
-    margin: 32px 0 0 0;
+    margin: 64px 0 0 0;
+    transition: all 0.2s ease-in-out;
+    color: #aaa
+}
+
+#clear-data-btn-mobile{
+    background-color: var(--background-color-light2);
 }
 
 #clear-data-btn-desktop{
@@ -278,7 +284,6 @@ button{
     
     /* Colors (Red/Warning theme) */
     background-color: #3b3e42; /* Dark Grey */
-    border: 1px solid #555;
     color: #aaa;
     border-radius: 20px;
     cursor: pointer;

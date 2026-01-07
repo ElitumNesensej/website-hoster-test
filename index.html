@@ -321,6 +321,8 @@
             let TextInitial = "Clear Data";
             button.textContent = TextInitial;
             let Confirm = false;
+            button.style.padding = "4px 8px";
+
             button.addEventListener('click', () => {
                 if (Confirm == true) {
                     localStorage.removeItem('marketSettings');
@@ -329,9 +331,14 @@
                 }else if(Confirm == false){
                     button.textContent = "Are you sure?";
                     Confirm = true;
+                    button.style.padding = "8px 16px";
+
                     setTimeout(() => {
                         Confirm = false;
                         button.textContent = TextInitial;
+                        
+                        button.style.padding = "4px 8px";
+
                     }, 1500);
                 }
             });
