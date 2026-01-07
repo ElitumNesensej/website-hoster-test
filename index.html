@@ -55,114 +55,124 @@
     <div id="result-area">
         <h3>Total Earnings: <span id="total-display">0.00 €</span></h3>
         <p>Total Hours: <span id="hours-display">0</span></p>
+        <button class="clear-data-btn" id="clear-data-btn-desktop"></button>
     </div>
 
+    <span><button class="clear-data-btn" id="clear-data-btn-mobile"></button></span>
+
     <script>
-        // --- STEP 1: SELECT DOM ELEMENTS ---
-        // We grab the HTML elements we need to interact with using their IDs.
+        /* =========================================
+        1. SETUP & DOM ELEMENTS
+        ========================================= */
+        
+        // Buttons
         const generateBtn = document.getElementById('generate-weeks-btn');
         const calculateBtn = document.getElementById('calculate-btn');
+        
+        // Containers
         const weeksContainer = document.getElementById('weeks-container');
         const scheduleArea = document.getElementById('schedule-area');
-        
+
         // Inputs
         const startDateInput = document.getElementById('start-date');
         const endDateInput = document.getElementById('end-date');
         const hourlyRateInput = document.getElementById('hourly-rate');
         const shiftHoursInput = document.getElementById('shift-hours');
-        
-        // Display Outputs
+
+        // Output Text
         const totalDisplay = document.getElementById('total-display');
         const hoursDisplay = document.getElementById('hours-display');
 
-        // --- STEP 2: HELPER FUNCTIONS ---
+        // Clear Data Button
+        const clearDataBtn = document.querySelectorAll('.clear-data-btn');
 
-        // This function adds days to a date. 
-        // Example: addDays(Nov 24, 1) -> Nov 25
+
+        /* =========================================
+        2. HELPER FUNCTIONS
+        ========================================= */
+
         function addDays(date, days) {
             const result = new Date(date);
             result.setDate(result.getDate() + days);
             return result;
         }
 
-        // This converts a Javascript Date object to a readable string like "Mon Nov 24"
         function formatDate(date) {
-            // 'en-US' makes it English. You can change to 'de-DE' for German.
-            const options = { weekday: 'short', month: 'short', day: 'numeric' };
-            return date.toLocaleDateString('en-US', options);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'short', month: 'short', day: 'numeric' 
+            });
         }
 
-        // --- STEP 3: GENERATE THE SCHEDULE ---
-        
-        // --- STEP 3: GENERATE THE SCHEDULE (UPDATED) ---
-        
-        generateBtn.addEventListener('click', generateFunction);
-        
-        function generateFunction(isLoading = false) {
-            // 1. Get the values from the date inputs
+
+        /* =========================================
+        3. MAIN LOGIC: GENERATE SCHEDULE
+        ========================================= */
+
+        generateBtn.addEventListener('click', () => {
+            generateFunction();
+            saveData(); // Save immediately when user changes schedule
+        });
+
+        function generateFunction() {
+            // Get Inputs
             const start = startDateInput.valueAsDate;
             const end = endDateInput.valueAsDate;
-
-            const currentRows = document.querySelectorAll('.day-row');
-            let rowBackpack = {};
-
-            currentRows.forEach(row => {
-            // 1. Get the ID
-            const id = row.getAttribute('data-date'); 
-
-            // 2. Save to backpack if ID exists
-            if (id) {
-                rowBackpack[id] = row;         
-                }
-            });
-
-            console.log("Row backpack created:", rowBackpack);
-
-            weeksContainer.innerHTML = ''; // Clear previous weeks
-
-            // capture the default shift length to use for every day
             const defaultHours = shiftHoursInput.value; 
 
-            // Simple validation
+            // Validation
             if (!start || !end || start > end) {
+                // Check if we are just loading (start might be null initially)
+                if(startDateInput.value === "") return; 
                 alert("Please check your dates!");
                 return;
             }
 
-            // 2. Clear previous schedule
+            // --- BACKPACK STRATEGY (Save State) ---
+            const currentRows = document.querySelectorAll('.day-row');
+            let rowBackpack = {};
 
-            
-            // 3. Loop through dates to create weeks
+            currentRows.forEach(row => {
+                const id = row.getAttribute('data-date'); 
+                if (id) rowBackpack[id] = row;         
+            });
+            // --------------------------------------
+
+            // Clear visual container
+            weeksContainer.innerHTML = ''; 
+
+            // Loop setup
             let currentDate = new Date(start);
             let weekCount = 1;
 
-            // Create the first week wrapper
+            // Create first week box
             let currentWeekDiv = document.createElement('div');
             currentWeekDiv.className = 'week-box'; 
             currentWeekDiv.innerHTML = `
-            
-           <div id="WeekText">
-                <h4>Week ${weekCount}</h4>
-                <h4>Hours</h4>
-            </div>
-            `;
-            
+            <div id="WeekText">
+                    <h4>Week ${weekCount}</h4>
+                    <h4>Hours</h4>
+                </div>`;
             weeksContainer.appendChild(currentWeekDiv);
 
-            let OperationCounter = 0;
-
+            // Generate Days
             while (currentDate <= end) {
-
-                // Create a container for this specific day (for better layout control)
                 const dateKey = currentDate.toISOString().slice(0,10);
                 let dayContainer;
 
                 if(rowBackpack[dateKey]){
+                    // RECYCLE OLD ROW ♻️
                     dayContainer = rowBackpack[dateKey];
-                    console.log("Reusing row for date:", dateKey);    
-                } else {
+                    
+                    // Logic: If unchecked, update to new default hours. 
+                    // If checked, keep user's custom hours.
+                    const checkbox = dayContainer.querySelector('.day-checkbox');
+                    const input = dayContainer.querySelector('.day-hours-input');
+                    if (checkbox.checked === false) {
+                        input.value = defaultHours;
+                    }
 
-                    // 1. The Checkbox
+                } else {
+                    // CREATE NEW ROW 🔨
                     dayContainer = document.createElement('div');
                     dayContainer.className = 'day-row';
                     dayContainer.setAttribute('data-date', dateKey);
@@ -171,32 +181,23 @@
                     checkbox.type = 'checkbox';
                     checkbox.className = 'day-checkbox';
                     
-                    // 2. The Label (Date)
                     const label = document.createElement('label');
-                    // Add a non-breaking space for spacing
                     label.innerHTML = "&nbsp;" + formatDate(currentDate);
-                    label.style.flexGrow = "1"; // Push the input to the right if needed
-                    
-                    // Put checkbox inside label so clicking the text also checks the box
+                    label.style.flexGrow = "1"; 
                     label.prepend(checkbox);
 
-                    // 3. The Specific Hour Input (NEW!)
                     const hourInput = document.createElement('input');
                     hourInput.type = 'number';
-                    hourInput.className = 'day-hours-input'; // Class to find it later
-                    hourInput.value = defaultHours; // Set the default value from the top setting
- 
-                    // Add elements to the day container
+                    hourInput.className = 'day-hours-input'; 
+                    hourInput.value = defaultHours;
+
                     dayContainer.appendChild(label);
                     dayContainer.appendChild(hourInput);
                 }
-
-
                 
-                // Add the day container to the week
                 currentWeekDiv.appendChild(dayContainer);
 
-                // Check if it's Sunday to start a new week
+                // Handle Sunday Break
                 if (currentDate.getDay() === 0 && currentDate < end) {
                     weekCount++;
                     currentWeekDiv = document.createElement('div');
@@ -206,63 +207,51 @@
                     weeksContainer.appendChild(currentWeekDiv);
                 }
 
-
-                // Move to next day
                 currentDate = addDays(currentDate, 1);
             }
 
-            // Show the schedule area
+            // Show result
             scheduleArea.style.display = 'block';
-
             weeksContainer.scrollIntoView({ behavior: 'smooth'});
-            console.log("Schedule generated. Scrolled into view");
-           
-            saveData();
-        };
+        }
 
-        // --- STEP 4: CALCULATE EARNINGS (UPDATED) ---
+
+        /* =========================================
+        4. CALCULATION LOGIC
+        ========================================= */
 
         calculateBtn.addEventListener('click', CalculateFunction); 
         
         function CalculateFunction() {
-            // 1. Find all checkboxes that are CHECKED
             const checkedBoxes = document.querySelectorAll('.day-checkbox:checked');
-            
             let totalHours = 0;
 
-            // 2. Loop through each checked box to find its specific hours
             checkedBoxes.forEach(function(box) {
-                
-                // We need to find the input inside the SAME "day-row" container.
                 const rowContainer = box.closest('.day-row');
                 const hourInput = rowContainer.querySelector('.day-hours-input');
-                
-                // Get the value from that specific input
                 const hoursForThisDay = parseFloat(hourInput.value);
                 
-                // Add to total (if it's a valid number)
                 if (!isNaN(hoursForThisDay) && hoursForThisDay > 0 && hoursForThisDay <= 24) {
                     totalHours += hoursForThisDay;
-                }else {
-                    alert("Please enter valid hours (0-24) for selected days.");
                 }
-                saveData();
             });
 
-            // 3. Get wage
             const wage = parseFloat(hourlyRateInput.value);
-
-            // 4. Calculate Total Money
             const totalMoney = totalHours * wage;
 
-            // 5. Update Display
             hoursDisplay.textContent = totalHours;
             totalDisplay.textContent = totalMoney.toFixed(2) + " €";
+
+            saveData(); // Save after calculating
         };
 
 
+        /* =========================================
+        5. SAVE & LOAD (DATA PERSISTENCE)
+        ========================================= */
+
         function saveData() {
-            // Placeholder for future data saving functionality
+            // We keep YOUR variable names here to ensure compatibility
             const Settings = {
                 hourlyRateInput: hourlyRateInput.value,
                 shiftHoursInput: shiftHoursInput.value,
@@ -271,14 +260,12 @@
             };
 
             const shifts = {};
-
-            // Select day row
             const dayRows = document.querySelectorAll('.day-row');
+            
             dayRows.forEach(row => {
-                // We access all elements in the row
                 const checkbox = row.querySelector('.day-checkbox');
                 const hourInput = row.querySelector('.day-hours-input');
-                const dateLabel = row.querySelector('label').innerText.trim(); //trim is to remove extra spaces
+                const dateLabel = row.querySelector('label').innerText.trim();
                 
                 if (checkbox.checked || hourInput.value !== shiftHoursInput.value) {
                     shifts[dateLabel] = {
@@ -286,21 +273,19 @@
                         hours: hourInput.value
                     };
                 }
-            })
-
+            });
 
             localStorage.setItem('marketSettings', JSON.stringify(Settings));
             localStorage.setItem('marketShifts', JSON.stringify(shifts));
-
-            // Optional: Tell yourself it worked
-            console.log("Settings saved!");
         }
 
         function loadData() {
             const savedSettings = localStorage.getItem('marketSettings');
             const savedShifts = localStorage.getItem('marketShifts');
+
             if (savedSettings) {
                 const Settings = JSON.parse(savedSettings);
+                // Re-applying your exact keys
                 hourlyRateInput.value = Settings.hourlyRateInput;
                 shiftHoursInput.value = Settings.shiftHoursInput;
                 startDateInput.value = Settings.startDateInput;
@@ -308,26 +293,51 @@
             }
 
             if(savedShifts) {
-
                 const Shifts = JSON.parse(savedShifts);
+                
+                // Build the HTML first
+                generateFunction(); 
 
-                generateFunction(); // Generate the schedule first
-                console.log("Loading saved shifts...");
-
-                elements = document.querySelectorAll('.day-row');
+                // Fill in the details
+                const elements = document.querySelectorAll('.day-row');
                 elements.forEach(row => {
                     const dateLabel = row.querySelector('label').innerText.trim();
                     if(Shifts[dateLabel]) {
                         row.querySelector('.day-checkbox').checked = Shifts[dateLabel].checked;
                         row.querySelector('.day-hours-input').value = Shifts[dateLabel].hours;
-
-                        calculateBtn.click(); // Recalculate totals after loading
                     }
                 });
+                
+                // Update the totals text
+                CalculateFunction();
             }
         }
 
+        // Initialize
+        // Using your method with () to ensure it runs immediately if DOM is ready
         window.addEventListener('DOMContentLoaded', loadData());
+        
+        clearDataBtn.forEach(button => {
+            let TextInitial = "Clear Data";
+            button.textContent = TextInitial;
+            let Confirm = false;
+            button.addEventListener('click', () => {
+                if (Confirm == true) {
+                    localStorage.removeItem('marketSettings');
+                    localStorage.removeItem('marketShifts');
+                    location.reload(); // Reload to reset the app
+                }else if(Confirm == false){
+                    button.textContent = "Are you sure?";
+                    Confirm = true;
+                    setTimeout(() => {
+                        Confirm = false;
+                        button.textContent = TextInitial;
+                    }, 1500);
+                }
+            });
+        });
+
+
     </script>
 </body>
 </html>

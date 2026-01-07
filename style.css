@@ -190,6 +190,9 @@ button{
     overflow-y: auto;
     margin-top: 12px;
     padding: 0px 6px;
+
+    scrollbar-width: thin;           /* Makes it thinner */
+    scrollbar-color: #4a4d52 #222426; /* thumb_color track_color */
 }
 
 /* #weektext is responsible for the week 1 div, created in js. It alignes text Hours to the right */
@@ -223,6 +226,14 @@ button{
 
 }
 
+.clear-data-btn{
+    margin: 32px 0 0 0;
+}
+
+#clear-data-btn-desktop{
+    display: none; /* Hidden by default, shown in desktop version */
+}
+    
 
 /* === DESKTOP VERSION === */
 /* Triggers only when screen is wider than 600px (Tablets) */
@@ -238,7 +249,7 @@ button{
     }
 
     .settings-area {
-        max-width: 800px;
+        max-width: 550px;
         padding: 30px 100px;
     }
 
@@ -250,4 +261,32 @@ button{
     #result-area {
         padding: 12px;
     }
+
+    #clear-data-btn-desktop {
+    margin: 0;
+    display: block; /* Show the button in desktop version */
+
+    position: absolute; /* Take it out of the flow */
+    right: 15px;        /* 15px from the right edge */
+    top: 50%;           /* Center vertically */
+    transform: translateY(-50%); /* Perfect vertical centering */
+
+        /* Make it small */
+    padding: 6px 12px;
+    font-size: 12px;
+    width: auto;        
+    
+    /* Colors (Red/Warning theme) */
+    background-color: #3b3e42; /* Dark Grey */
+    border: 1px solid #555;
+    color: #aaa;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    }
+    #clear-data-btn-mobile{
+        display: none; /* Hide the mobile button in desktop version */
+    }
+
 }
