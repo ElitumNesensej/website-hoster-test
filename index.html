@@ -46,10 +46,11 @@
         <h3>3. Select Working Days</h3>
         <p>Check the boxes for the days you will work.</p>
         
-        <div class="weeks-container" id="weeks-container"></div>
+        <div class="weeks-container" id="weeks-container">
+            <!-- Weeks and Days will be generated here -->
+        </div>
 
         <br>
-        <button id="calculate-btn">Calculate Total Earnings</button>
     </div>
 
     <div id="result-area">
@@ -113,7 +114,7 @@
             saveData(); // Save immediately when user changes schedule
         });
 
-        function generateFunction() {
+        function generateFunction(firstLoading = false) {
             // Get Inputs
             const start = startDateInput.valueAsDate;
             const end = endDateInput.valueAsDate;
@@ -180,6 +181,9 @@
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.className = 'day-checkbox';
+                    checkbox.addEventListener('change', () => {
+                        CalculateFunction() // Recalculate on change
+                    });
                     
                     const label = document.createElement('label');
                     label.innerHTML = "&nbsp;" + formatDate(currentDate);
@@ -187,9 +191,14 @@
                     label.prepend(checkbox);
 
                     const hourInput = document.createElement('input');
-                    hourInput.type = 'number';
+                    hourInput.type = 'float';
                     hourInput.className = 'day-hours-input'; 
                     hourInput.value = defaultHours;
+                    hourInput.addEventListener('input', () => {
+                        if(hourInput.value < 0) hourInput.value = 0;
+                        if(hourInput.value > 24) hourInput.value = 24;
+                        CalculateFunction() // Recalculate on input
+                    });
 
                     dayContainer.appendChild(label);
                     dayContainer.appendChild(hourInput);
@@ -212,15 +221,16 @@
 
             // Show result
             scheduleArea.style.display = 'block';
-            weeksContainer.scrollIntoView({ behavior: 'smooth'});
+            if(firstLoading == false){
+                weeksContainer.scrollIntoView({ behavior: 'smooth'});
+            }
+
         }
 
 
         /* =========================================
         4. CALCULATION LOGIC
         ========================================= */
-
-        calculateBtn.addEventListener('click', CalculateFunction); 
         
         function CalculateFunction() {
             const checkedBoxes = document.querySelectorAll('.day-checkbox:checked');
@@ -296,7 +306,7 @@
                 const Shifts = JSON.parse(savedShifts);
                 
                 // Build the HTML first
-                generateFunction(); 
+                generateFunction(true); 
 
                 // Fill in the details
                 const elements = document.querySelectorAll('.day-row');
