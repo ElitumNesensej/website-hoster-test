@@ -11,53 +11,66 @@
 </head>
 <body>
 
-    <h1 id="header-title"><span>Part-Time <br>Job Calculator</span></h1>
-
-    <div class="settings-area">
-        <div id="job-detail-div">
-                <h3>1. Job Details</h3>
-            <label>
-                Hourly Wage (€):
-                <input type="number" id="hourly-rate" value="13">
-            </label>
-            <label>
-                Hours per Shift: 
-                <input type="number" id="shift-hours" value="4">
-            </label>
-        </div>
-
-        <div id="market-duration-div">
-            <h3>2. Market Duration</h3>
-            <label>
-                Start Date:
-                <input type="date" id="start-date" value="2025-11-29">
-            </label>
-            <label>
-                End Date:
-                <input type="date" id="end-date" value="2025-12-28">
-            </label>
-        </div>
-        
-
-        <button id="generate-weeks-btn">Generate Schedule</button>
+    <div id="loading-overlay">
     </div>
 
-    <div id="schedule-area" style="display:none;">
-        <h3>3. Select Working Days</h3>
-        <p>Check the boxes for the days you will work.</p>
-        
-        <div class="weeks-container" id="weeks-container">
-            <!-- Weeks and Days will be generated here -->
+    <main id="app-layout">
+
+        <div id="left-column">
+            
+            <h1 id="header-title"><span>Part-Time <br>Job Calculator</span></h1>
+
+            <div class="settings-area">
+                <div id="job-detail-div">
+                        <h3>1. Job Details</h3>
+                    <label>
+                        Hourly Wage (€):
+                        <input type="number" id="hourly-rate" value="13">
+                    </label>
+                    <label>
+                        Hours per Shift: 
+                        <input type="number" id="shift-hours" value="4">
+                    </label>
+                </div>
+
+                <div id="market-duration-div">
+                    <h3>2. Market Duration</h3>
+                    <label>
+                        Start Date:
+                        <input type="date" id="start-date" value="2025-11-29">
+                    </label>
+                    <label>
+                        End Date:
+                        <input type="date" id="end-date" value="2025-12-28">
+                    </label>
+                </div>
+                
+
+                <button id="generate-weeks-btn">Generate Schedule</button>
+            </div>
+        </div>    
+
+        <div id="schedule-area" style="display:none;">
+            <h3>3. Select Working Days</h3>
+            <p>Check the boxes for the days you will work.</p>
+            
+            <div class="weeks-container" id="weeks-container">
+                <!-- Weeks and Days will be generated here -->
+            </div>
+
+            <br>
         </div>
+    </main>
 
-        <br>
-    </div>
+    <footer>
+        <div id="result-area">
+            <h3>Total Earnings: <span id="total-display">0.00 €</span></h3>
+            <p>Total Hours: <span id="hours-display">0</span></p>
+            <button class="clear-data-btn" id="clear-data-btn-desktop"></button>
+        </div>
+    </footer>
 
-    <div id="result-area">
-        <h3>Total Earnings: <span id="total-display">0.00 €</span></h3>
-        <p>Total Hours: <span id="hours-display">0</span></p>
-        <button class="clear-data-btn" id="clear-data-btn-desktop"></button>
-    </div>
+
 
     <span><button class="clear-data-btn" id="clear-data-btn-mobile"></button></span>
 
@@ -110,6 +123,11 @@
         ========================================= */
 
         generateBtn.addEventListener('click', () => {
+            const IsScheduleShown = scheduleArea.classList.contains('show');
+
+            if(IsScheduleShown == false){
+                document.getElementById('left-column').classList.add('pressed');
+            }
             generateFunction();
             saveData(); // Save immediately when user changes schedule
         });
@@ -221,9 +239,13 @@
 
             // Show result
             scheduleArea.style.display = 'block';
+            scheduleArea.classList.add('show');
+
             if(firstLoading == false){
                 weeksContainer.scrollIntoView({ behavior: 'smooth'});
+                
             }
+
 
         }
 
@@ -326,6 +348,10 @@
         // Initialize
         // Using your method with () to ensure it runs immediately if DOM is ready
         window.addEventListener('DOMContentLoaded', loadData());
+        // Wait for EVERYTHING (images, fonts, css) to load
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+        });
         
         clearDataBtn.forEach(button => {
             let TextInitial = "Clear Data";
@@ -335,7 +361,6 @@
 
             button.addEventListener('click', () => {
                 if (Confirm == true) {
-                    localStorage.removeItem('marketSettings');
                     localStorage.removeItem('marketShifts');
                     location.reload(); // Reload to reset the app
                 }else if(Confirm == false){

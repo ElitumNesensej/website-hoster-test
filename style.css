@@ -13,6 +13,28 @@
     --background-color-light2: hsl(210, 6%, 18%);
 }
 
+/* The Black Curtain */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-color); /* Matches your theme */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease-out; /* Smooth fade out */
+}
+
+
+/* Helper to hide it */
+.loaded #loading-overlay {
+    opacity: 0;
+    pointer-events: none; /* Let clicks pass through */
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--background-color);
@@ -25,6 +47,22 @@ body {
     padding: 24px;
     padding-bottom: 105px;
     min-height: 100vh;
+
+}
+
+main{
+    animation: fade-up 1s ease forwards;
+}
+
+@keyframes fade-up {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 
@@ -35,6 +73,9 @@ body {
     background-image: linear-gradient(75deg,rgba(255, 254, 255, 1) 26%, rgba(255, 254, 255, 0.2) 100%);
     background-clip: text;
     color: transparent;
+
+    user-select: none; /* Standard syntax */
+    -webkit-user-select: none; /* Safari */
 }
 
 /* Settings Area is the box containing all Hours input, dates input and calculate button */
@@ -102,17 +143,19 @@ button{
     border: none;
 }
 
+button:hover{
+    cursor: pointer;
+    filter: brightness(1.1);
+}
+
 .settings-area button{
     padding: 8px 32px;
     font-size: 16px;
     border: none;
 }
 
-#calculate-btn{
-    padding: 8px 16px;
-    font-size: 16px;
-    border: none;
-}
+
+
 
 #schedule-area {
     margin-top: 12px;
@@ -121,6 +164,10 @@ button{
     border-radius: 8px;
     box-shadow: -4px 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+    #schedule-area.show {
+        animation: fade-up 0.4s ease forwards;
+    }
 
 #schedule-area h3 {
     font-size: 1.5em;
@@ -249,20 +296,68 @@ button{
         padding-bottom: 150px;
     }
 
+    
+
+    main{
+        display: flex;
+        flex-direction: row;
+
+
+        gap: 24px;
+
+    }
+
+    #left-column {
+        display: flex;
+        flex-direction: row;
+
+        gap: 24px;
+    }
+
+    #left-column.pressed {
+        animation: slide-left 0.3s ease forwards;
+    }
+
+            @keyframes slide-left {
+        0% {
+            transform: translateX(200px);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes shake-animation {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        50% { transform: translateX(10px); }
+        75% { transform: translateX(-10px); }
+        100% { transform: translateX(0); }
+    }
+
     #header-title {
         align-self: center;
         font-size: 40px;
+        
     }
 
     .settings-area {
         max-width: 550px;
-        padding: 30px 100px;
+        padding: 30px 75px;
+        max-height: 573px;
+
+        flex: 1;
     }
 
     #schedule-area {
-        max-width: 800px;
-        padding: 30px 100px;
+        max-width: 550px;
+        max-height: 573px;
+        padding: 30px 75px;
+
+        flex: 1;
     }
+
+
 
     .weeks-container {
         max-height: 400px;
