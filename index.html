@@ -268,13 +268,21 @@
                 }
             });
 
-            const wage = parseFloat(hourlyRateInput.value);
+            const wage = parseFloat(hourlyRateInput.value) || 0;
             const totalMoney = totalHours * wage;
 
             hoursDisplay.textContent = totalHours;
-            totalDisplay.textContent = totalMoney.toFixed(2) + " €";
+
+            const formatter = new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2
+            });
+            
+            totalDisplay.textContent = formatter.format(totalMoney);
 
             saveData(); // Save after calculating
+
         };
 
 

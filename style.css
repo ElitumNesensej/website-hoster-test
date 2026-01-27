@@ -290,7 +290,7 @@ button:hover{
 
 /* === DESKTOP VERSION === */
 /* Triggers only when screen is wider than 600px (Tablets) */
-@media (min-width: 600px) {
+@media (min-width: 1300px) {
     body {
         padding: 40px;
         padding-bottom: 150px;
